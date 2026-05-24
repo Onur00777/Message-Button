@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kişiye Özel Sürpriz v3.1</title>
+  <title>Kişiye Özel Sürpriz v3.2</title>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
@@ -44,6 +44,7 @@
       transform-style: preserve-3d;
       transform: rotateY(180deg); 
       transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer; /* Telefonun geneline tıklama imleci verdik */
     }
 
     .phone-face {
@@ -65,7 +66,6 @@
       justify-content: center;
       align-items: center;
       transform: rotateY(180deg);
-      cursor: pointer;
     }
 
     .camera-bump {
@@ -146,13 +146,11 @@
       border-radius: 50%;
     }
 
-    /* Orijinal iPhone Tasarım İmzası */
     .iphone-footer-text {
       position: absolute;
       bottom: 45px;
       width: 100%;
       text-align: center;
-      /* Apple'ın orijinal font ailesine en yakın sistem fontları */
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       font-size: 0.55rem;
       color: rgba(255, 255, 255, 0.45);
@@ -168,10 +166,7 @@
       align-items: center;
       padding: 20px;
       box-sizing: border-box;
-      cursor: grab;
-    }
-    .phone-front:active {
-      cursor: grabbing;
+      /* Avuçlama imleci (grab) kaldırıldı, tıklama imleci korundu */
     }
 
     .dynamic-island {
@@ -417,17 +412,17 @@
   <div id="camera-flash"></div>
 
   <div class="scene">
-    <div class="phone" id="iphone">
+    <!-- Tıklama algılaması için ana event handlePhoneClick'e yönlendirildi -->
+    <div class="phone" id="iphone" onclick="handlePhoneClick(event)">
       
       <!-- ARKA YÜZ -->
-      <div class="phone-face phone-back" id="phone-back" onclick="triggerFlip()">
+      <div class="phone-face phone-back" id="phone-back">
         <div class="camera-bump">
           <div class="lens lens-1"></div>
           <div class="lens lens-2"></div>
           <div class="phone-flash-led"></div>
         </div>
         <div class="apple-logo"></div>
-        <!-- İMZA BURADA -->
         <div class="iphone-footer-text">Designed by Onur in California</div>
       </div>
 
@@ -492,6 +487,15 @@
     }
     updateClock();
     setInterval(updateClock, 1000);
+
+    // Kapsayıcı tıklama fonksiyonu
+    function handlePhoneClick(event) {
+      if (!isFlipped) {
+        triggerFlip();
+      } else if (isUnlocked) {
+        createSparks(event);
+      }
+    }
 
     function triggerFlip() {
       if (isFlipped) return;
@@ -569,9 +573,7 @@
       });
     }
 
-    frontFace.addEventListener('click', (e) => {
-      if (!isUnlocked) return;
-
+    function createSparks(e) {
       confetti({
         particleCount: 15,
         spread: 60,
@@ -605,7 +607,7 @@
 
         setTimeout(() => { heart.remove(); }, parseFloat(duration) * 1000);
       }
-    });
+    }
   </script>
 </body>
 </html>
