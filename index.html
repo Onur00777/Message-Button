@@ -2,23 +2,26 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kişiye Özel Sürpriz v3.2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Kişiye Özel Sürpriz v3.3 (Kriz Operasyonu)</title>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
+    /* Ana sayfa zeminini baştan aşağı renklendirelim */
     body {
       margin: 0;
       height: 100vh;
       overflow: hidden;
-      background: radial-gradient(circle at center, #1e112a 0%, #09050d 100%);
+      background: radial-gradient(circle at center, #1b0a2a 0%, #05020a 100%);
       font-family: 'Poppins', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
-      perspective: 1000px;
+      /* 3D perspektifi telefon için daraltıp stabilize ettik */
+      perspective: 800px;
       user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     #camera-flash {
@@ -30,9 +33,22 @@
       z-index: 999;
     }
 
-    .scene {
+    /* Kriz Çözücü #1: Ölçeklendirme Kapsayıcısı */
+    .view-wrapper {
+      position: relative;
+      /* Laptop ölçüleri */
       width: 320px;
       height: 640px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.5s ease-out;
+      transform-origin: center center; /* Merkezden ölçekle */
+    }
+
+    .scene {
+      width: 100%;
+      height: 100%;
       position: relative;
       transform-style: preserve-3d;
     }
@@ -44,7 +60,7 @@
       transform-style: preserve-3d;
       transform: rotateY(180deg); 
       transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer; /* Telefonun geneline tıklama imleci verdik */
+      cursor: pointer;
     }
 
     .phone-face {
@@ -53,32 +69,35 @@
       height: 100%;
       backface-visibility: hidden;
       border-radius: 45px;
-      box-shadow: 0 25px 50px rgba(0,0,0,0.8), inset 0 0 15px rgba(255,255,255,0.2);
       border: 4px solid #3a0007;
       box-sizing: border-box;
       overflow: hidden;
     }
 
-    /* --- IPHONE SIRTASI --- */
+    /* --- IPHONE SIRTASI (Renklendirme Krizine Son) --- */
     .phone-back {
       background: linear-gradient(135deg, #e60026 0%, #8a0014 100%);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.7), inset 0 0 20px rgba(0,0,0,0.5);
       display: flex;
       justify-content: center;
       align-items: center;
       transform: rotateY(180deg);
     }
 
+    /* Kriz Çözücü #2: Katmanlama (Z-Index) */
     .camera-bump {
       position: absolute;
       top: 25px;
       left: 25px;
       width: 110px;
       height: 110px;
-      background: rgba(138, 0, 20, 0.4);
+      background: rgba(138, 0, 20, 0.6);
       backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
       border-radius: 28px;
       border: 1px solid rgba(255,255,255,0.15);
       box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
+      z-index: 5; /* Arka plandaki elmalardan öne aldık */
     }
 
     .lens {
@@ -116,12 +135,13 @@
     .apple-logo {
       width: 45px;
       height: 55px;
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.9);
       border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+      z-index: 2; /* Kamera bump'ın arkasında kalsın */
     }
     .apple-logo::before {
       content: '';
@@ -130,7 +150,7 @@
       right: -5px;
       width: 20px;
       height: 20px;
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.9);
       border-radius: 100% 0% 100% 0%;
       transform: rotate(-35deg);
     }
@@ -158,15 +178,16 @@
       pointer-events: none;
     }
 
-    /* --- IPHONE EKRANI --- */
+    /* --- IPHONE EKRANI (Renkli Kasa) --- */
     .phone-front {
       background: linear-gradient(180deg, #ff007f -20%, #4c0099 50%, #000000 100%);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.7), inset 0 0 20px rgba(0,0,0,0.5);
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 20px;
       box-sizing: border-box;
-      /* Avuçlama imleci (grab) kaldırıldı, tıklama imleci korundu */
+      transform: rotateY(0deg);
     }
 
     .dynamic-island {
@@ -411,63 +432,60 @@
 
   <div id="camera-flash"></div>
 
-  <div class="scene">
-    <!-- Tıklama algılaması için ana event handlePhoneClick'e yönlendirildi -->
-    <div class="phone" id="iphone" onclick="handlePhoneClick(event)">
-      
-      <!-- ARKA YÜZ -->
-      <div class="phone-face phone-back" id="phone-back">
-        <div class="camera-bump">
-          <div class="lens lens-1"></div>
-          <div class="lens lens-2"></div>
-          <div class="phone-flash-led"></div>
-        </div>
-        <div class="apple-logo"></div>
-        <div class="iphone-footer-text">Designed by Onur in California</div>
-      </div>
-
-      <!-- ÖN YÜZ -->
-      <div class="phone-face phone-front" id="phone-front">
-        <div class="dynamic-island"></div>
-        <div class="lock-dimmer" id="dimmer"></div>
+  <div class="view-wrapper" id="view-wrapper">
+    <div class="scene">
+      <div class="phone" id="iphone" onclick="handlePhoneClick(event)">
         
-        <!-- FaceID Tarayıcı -->
-        <div class="face-id-scanner" id="face-id">
-          <div class="scanner-line" id="scanner-line"></div>
-          <div class="face-icon" id="lock-icon">🔒</div>
+        <div class="phone-face phone-back" id="phone-back">
+          <div class="camera-bump">
+            <div class="lens lens-1"></div>
+            <div class="lens lens-2"></div>
+            <div class="phone-flash-led"></div>
+          </div>
+          <div class="apple-logo"></div>
+          <div class="iphone-footer-text">Designed by Onur in California</div>
         </div>
 
-        <div class="screen-content">
-          <div class="ios-lockscreen-time">
-            <p class="ios-date" id="live-date">24 MAYIS PAZAR</p>
-            <h1 class="ios-time" id="live-time">15:40</h1>
-          </div>
-
-          <div class="ios-notification" id="notification">
-            <div class="noti-header">
-              <span class="author-signature">Onur Yüksek 💪</span>
-              <span>şimdi</span>
-            </div>
-            <h2 class="message-title">İyi Ki Doğdun! 🎉</h2>
-            <p class="message-body">Yeni yaşında her şey gönlünce olsun, tüm güzellikler seni bulsun!</p>
-          </div>
+        <div class="phone-face phone-front" id="phone-front">
+          <div class="dynamic-island"></div>
+          <div class="lock-dimmer" id="dimmer"></div>
           
-          <div class="emoji-dock">
-            <span class="emoji">🥳</span>
-            <span class="emoji">🥰</span>
-            <span class="emoji">😎</span>
+          <div class="face-id-scanner" id="face-id">
+            <div class="scanner-line" id="scanner-line"></div>
+            <div class="face-icon" id="lock-icon">🔒</div>
           </div>
-        </div>
 
-        <!-- Kaydırma Alanı -->
-        <div class="swipe-area" id="swipe-area">
-          <div class="swipe-text">Açmak için yukarı kaydır</div>
-          <div class="swipe-bar"></div>
-        </div>
+          <div class="screen-content">
+            <div class="ios-lockscreen-time">
+              <p class="ios-date" id="live-date">24 MAYIS PAZAR</p>
+              <h1 class="ios-time" id="live-time">15:40</h1>
+            </div>
 
+            <div class="ios-notification" id="notification">
+              <div class="noti-header">
+                <span class="author-signature">Onur Yüksek 💪</span>
+                <span>şimdi</span>
+              </div>
+              <h2 class="message-title">İyi Ki Doğdun! 🎉</h2>
+              <p class="message-body">Yeni yaşında her şey gönlünce olsun, tüm güzellikler seni bulsun!</p>
+            </div>
+            
+            <div class="emoji-dock">
+              <span class="emoji">🥳</span>
+              <span class="emoji">🥰</span>
+              <span class="emoji">😎</span>
+            </div>
+          </div>
+
+          <div class="swipe-area" id="swipe-area">
+            <div class="swipe-text">Açmak için yukarı kaydır</div>
+            <div class="swipe-bar"></div>
+          </div>
+
+        </div>
       </div>
+      <div class="hint-text" id="hint">Fotoğraf çekilmek için telefona tıkla! 📸</div>
     </div>
-    <div class="hint-text" id="hint">Fotoğraf çekilmek için telefona tıkla! 📸</div>
   </div>
 
   <script>
@@ -475,6 +493,35 @@
     let isUnlocked = false;
     let isUnlocking = false;
 
+    // Kriz Çözücü #1: Dinamik Responsive Ölçeklendirme
+    function adjustScale() {
+      const wrapper = document.getElementById('view-wrapper');
+      // Laptop ölçüleri (baz alacağımız ölçü)
+      const designWidth = 320;
+      const designHeight = 640;
+      // Anlık ekran (viewport) ölçüleri
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+
+      // Hem genişlik hem de yükseklik için gereken ölçeği hesapla
+      const scaleX = screenWidth / designWidth;
+      const scaleY = screenHeight / designHeight;
+
+      // Hangi oran daha küçükse (yani hangisi daha çok sığmaya muhtaçsa) onu kullan.
+      // Ayrıca laptopta gereksiz büyümemesi için 1.15 gibi bir tavan koy.
+      let scale = Math.min(scaleX, scaleY, 1.15); 
+      
+      // Mobilde çok küçük kalmaması için bir taban (Örn: %80) koy.
+      // Sürükleme çizgisi sorunu için buradan biraz pay bırakıyoruz (0.95).
+      if (screenWidth < 600) {
+        scale = Math.max(0.8, scale * 0.95);
+      }
+
+      // CSS Transform ile tüm kapsayıcıyı ölçekle
+      wrapper.style.transform = `scale(${scale})`;
+    }
+
+    // Saati ve tarihi gerçek zamanlı güncelle
     function updateClock() {
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, '0');
@@ -485,10 +532,8 @@
       const dateText = now.toLocaleDateString('tr-TR', options).toUpperCase();
       document.getElementById('live-date').textContent = dateText;
     }
-    updateClock();
-    setInterval(updateClock, 1000);
 
-    // Kapsayıcı tıklama fonksiyonu
+    // Tıklama işleyicisi
     function handlePhoneClick(event) {
       if (!isFlipped) {
         triggerFlip();
@@ -518,6 +563,7 @@
       }, 200);
     }
 
+    // Kaydırma algılaması (Swipe)
     const frontFace = document.getElementById('phone-front');
     let startY = 0;
 
@@ -608,6 +654,19 @@
         setTimeout(() => { heart.remove(); }, parseFloat(duration) * 1000);
       }
     }
+
+    // --- Başlangıç Operasyonları ---
+    // Saati ve tarihi anlık başlat
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Kriz Çözücü #1: Ölçeklendirmeyi anlık başlat ve her ekran değişiminde yenile
+    adjustScale();
+    window.addEventListener('resize', adjustScale);
+    // Bazı mobil tarayıcılar için oryantasyon değişimini de yakala
+    window.addEventListener('orientationchange', () => {
+      setTimeout(adjustScale, 100); // Küçük bir gecikme stabiliteyi artırır
+    });
   </script>
 </body>
 </html>
