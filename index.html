@@ -13,7 +13,7 @@
       margin: 0;
       height: 100vh;
       overflow: hidden;
-      background: radial-gradient(circle at center, #1b0a2a 0%, #05020a 100%);
+      background: #05020a;
       font-family: 'Poppins', sans-serif;
       display: flex;
       justify-content: center;
@@ -22,6 +22,43 @@
       perspective: 800px;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at center, #1b0a2a 0%, #05020a 100%);
+    }
+
+    body.page-lit::before {
+      background: radial-gradient(circle at center, #230f38 0%, #05020a 100%);
+    }
+
+    body.celebrate::before {
+      background:
+        radial-gradient(circle at center, rgba(35, 15, 56, 0.88) 0%, #05020a 70%),
+        linear-gradient(
+          160deg,
+          #4c0099 0%,
+          #7a1f6b 16%,
+          #c41e3a 32%,
+          #cc5500 48%,
+          #1b6b3a 64%,
+          #1a4d8f 80%,
+          #4c0099 100%
+        );
+      background-size: 100% 100%, 220% 220%;
+      background-position: 0 0, 20% 10%;
+      animation: pageRainbowDrift 56s ease-in-out 0.8s infinite;
+    }
+
+    @keyframes pageRainbowDrift {
+      0% { background-position: 0 0, 20% 10%; }
+      50% { background-position: 0 0, 80% 90%; }
+      100% { background-position: 0 0, 20% 10%; }
     }
 
     #camera-flash {
@@ -36,6 +73,7 @@
     /* Kriz Çözücü #1: Ölçeklendirme Kapsayıcısı */
     .view-wrapper {
       position: relative;
+      z-index: 1;
       /* Laptop ölçüleri */
       width: 320px;
       height: 640px;
@@ -180,7 +218,7 @@
 
     /* --- IPHONE EKRANI (Renkli Kasa) --- */
     .phone-front {
-      background: linear-gradient(180deg, #ff007f -20%, #4c0099 50%, #000000 100%);
+      background: #4c0099;
       box-shadow: 0 25px 50px rgba(0,0,0,0.7), inset 0 0 20px rgba(0,0,0,0.5);
       display: flex;
       flex-direction: column;
@@ -188,6 +226,50 @@
       padding: 20px;
       box-sizing: border-box;
       transform: rotateY(0deg);
+    }
+
+    /* Kilit ekranı zemini: başta pembe-mor, mesaj gelince gökkuşağına kayar */
+    .lockscreen-aurora {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(180deg, rgba(0, 0, 0, 0) 32%, rgba(0, 0, 0, 0.45) 68%, #000000 100%),
+        linear-gradient(
+          180deg,
+          #ff007f 0%,
+          #ff4d6d 8%,
+          #4c0099 16%,
+          #ff3b30 28%,
+          #ff7a18 40%,
+          #ffd60a 52%,
+          #32d74b 64%,
+          #64d2ff 76%,
+          #5e5ce6 84%,
+          #bf5af2 92%,
+          #ff007f 100%
+        );
+      background-size: 100% 100%, 100% 420%;
+      background-position: 0 0, 0 0;
+      background-repeat: no-repeat;
+    }
+
+    .unlocked .lockscreen-aurora {
+      animation: rainbowDrift 50s ease-in-out 0.8s infinite;
+    }
+
+    @keyframes rainbowDrift {
+      0% { background-position: 0 0, 0% 0%; }
+      50% { background-position: 0 0, 0% 100%; }
+      100% { background-position: 0 0, 0% 0%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .unlocked .lockscreen-aurora,
+      body.celebrate::before {
+        animation: none;
+      }
     }
 
     .dynamic-island {
@@ -447,6 +529,7 @@
         </div>
 
         <div class="phone-face phone-front" id="phone-front">
+          <div class="lockscreen-aurora" aria-hidden="true"></div>
           <div class="dynamic-island"></div>
           <div class="lock-dimmer" id="dimmer"></div>
           
@@ -558,7 +641,7 @@
           
           phone.classList.add('flipped');
           phone.style.transform = 'rotateY(0deg)';
-          document.body.style.background = 'radial-gradient(circle at center, #230f38 0%, #05020a 100%)';
+          document.body.classList.add('page-lit');
         }, 50);
       }, 200);
     }
@@ -604,6 +687,7 @@
           
           front.classList.add('unlocked');
           isUnlocked = true;
+          document.body.classList.add('celebrate');
 
           triggerOpeningConfetti();
         }, 500);
